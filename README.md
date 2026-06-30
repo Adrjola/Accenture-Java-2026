@@ -1,10 +1,11 @@
-# Student Mark Tracker
+# Accenture Java 2026
 
-A simple Java console application that calculates student mark averages and classifies the result.
+Java bootcamp practical tasks.
 
-## What it does
+## Tasks
 
-- Stores student marks in a 2D `int` array
-- Calculates each student's average mark
-- Classifies the result as `Excellent`, `Good`, `Passed`, or `Failed`
-- Prints the results to the console
+- `student-mark-tracker` - simple Java console app for calculating student mark averages.
+- `practical-task-1` - animal shelter console app.
+- `practical-task-2` - payment processing console app.
+
+Each task has its own source code and README file.
