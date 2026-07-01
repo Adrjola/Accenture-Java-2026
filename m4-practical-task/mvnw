@@ -8,4 +8,4 @@ if [ ! -f "$WRAPPER_JAR" ]; then
   exit 1
 fi
 
-exec java -classpath "$WRAPPER_JAR" "$WRAPPER_MAIN" "$@"
+exec java -Dmaven.multiModuleProjectDirectory="$BASE_DIR" -classpath "$WRAPPER_JAR" "$WRAPPER_MAIN" "$@"
