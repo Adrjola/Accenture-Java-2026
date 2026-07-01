@@ -10,7 +10,7 @@ A Java console application that simulates a smart home controller managing multi
 ## Running the Application
 
 ```bash
-mvn compile exec:java -Dexec.mainClass="com.bootcamp.smarthome.Main"
+mvn compile exec:java "-Dexec.mainClass=com.bootcamp.smarthome.Main"
 ```
 
 ## Project Structure
