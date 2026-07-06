@@ -1,0 +1,22 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.
+# ----------------------------------------------------------------------------
+
+MAVEN_PROJECTBASEDIR="${BASH_SOURCE%/*}"
+if [ -z "$MAVEN_PROJECTBASEDIR" ]; then
+  MAVEN_PROJECTBASEDIR=$(pwd)
+fi
+WRAPPER_JAR="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar"
+WRAPPER_PROPERTIES="$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.properties"
+
+if [ -r "$WRAPPER_PROPERTIES" ]; then
+  DOWNLOAD_URL=$(grep 'wrapperUrl' "$WRAPPER_PROPERTIES" | sed 's/wrapperUrl=//')
+fi
+
+if [ ! -e "$WRAPPER_JAR" ]; then
+  curl -o "$WRAPPER_JAR" "$DOWNLOAD_URL" -s
+fi
+
+exec java -jar "$WRAPPER_JAR" "$@"
