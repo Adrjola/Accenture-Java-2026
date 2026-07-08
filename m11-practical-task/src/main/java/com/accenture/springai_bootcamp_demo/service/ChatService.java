@@ -1,8 +1,9 @@
 package com.accenture.springai_bootcamp_demo.service;
 
-import com.accenture.springai_bootcamp_demo.client.OpenRouterClient;
+import com.accenture.springai_bootcamp_demo.client.AiClient;
 import com.accenture.springai_bootcamp_demo.dto.ChatDto;
 import com.accenture.springai_bootcamp_demo.dto.ChatSummaryDto;
+import com.accenture.springai_bootcamp_demo.dto.ChatSummaryResponse;
 import com.accenture.springai_bootcamp_demo.dto.CreateChatRequest;
 import com.accenture.springai_bootcamp_demo.dto.SendMessageRequest;
 import com.accenture.springai_bootcamp_demo.entity.Chat;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class ChatService {
     private final ChatRepository chatRepository;
-    private final OpenRouterClient openRouterClient;
+    private final AiClient aiClient;
     private final ChatMapper chatMapper;
 
     @Transactional
@@ -66,11 +67,17 @@ public class ChatService {
         Chat chat = loadChat(chatId);
 
         recordUserMessage(chat, request.content());
-        String reply = openRouterClient.complete(chat.getChatMessages());
+        String reply = aiClient.complete(chat.getChatMessages());
         recordAssistantMessage(chat, reply);
 
         chatRepository.save(chat);
         return chatMapper.toDto(chat);
+    }
+
+    @Transactional(readOnly = true)
+    public ChatSummaryResponse summarizeChat(String chatId) {
+        Chat chat = loadChat(chatId);
+        return new ChatSummaryResponse(aiClient.summarize(chat.getChatMessages()));
     }
 
     private void recordUserMessage(Chat chat, String content) {

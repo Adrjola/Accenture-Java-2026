@@ -3,18 +3,21 @@ const api = {
     create: () => fetch('/api/chats', { method: 'POST' }).then(r => r.json()),
     get: (id) => fetch(`/api/chats/${id}`).then(r => r.json()),
     remove: (id) => fetch(`/api/chats/${id}`, { method: 'DELETE' }),
+    summary: (id) => fetch(`/api/chats/${id}/summary`, { method: 'POST' }).then(handleJson),
     send: (id, content) => fetch(`/api/chats/${id}/chatMessages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
-    }).then(async r => {
-        if (!r.ok) {
-            const problem = await r.json().catch(() => ({}));
-            throw new Error(problem.detail || 'Request failed');
-        }
-        return r.json();
-    })
+    }).then(handleJson)
 };
+
+async function handleJson(response) {
+    if (!response.ok) {
+        const problem = await response.json().catch(() => ({}));
+        throw new Error(problem.detail || 'Request failed');
+    }
+    return response.json();
+}
 
 const els = {
     chatList: document.getElementById('chat-list'),
@@ -24,7 +27,8 @@ const els = {
     send: document.getElementById('send'),
     form: document.getElementById('composer'),
     error: document.getElementById('error'),
-    newChat: document.getElementById('new-chat')
+    newChat: document.getElementById('new-chat'),
+    summary: document.getElementById('summary')
 };
 
 let activeChatId = null;
@@ -36,6 +40,7 @@ function setError(message) {
 function setComposerEnabled(enabled) {
     els.input.disabled = !enabled;
     els.send.disabled = !enabled;
+    els.summary.disabled = !enabled;
 }
 
 async function refreshChatList() {
@@ -59,7 +64,7 @@ function renderChatItem(chat) {
 
     const del = document.createElement('button');
     del.className = 'del';
-    del.textContent = '🗑';
+    del.textContent = 'x';
     del.onclick = (e) => { e.stopPropagation(); deleteChat(chat.id); };
 
     item.append(title, count, del);
@@ -139,13 +144,33 @@ async function submitMessage(content) {
 function appendPending(content) {
     els.messages.querySelector('.empty')?.remove();
     els.messages.appendChild(renderMessage({ role: 'USER', content }));
-    const thinking = renderMessage({ role: 'ASSISTANT', content: '…' });
+    const thinking = renderMessage({ role: 'ASSISTANT', content: '...' });
     thinking.classList.add('pending');
     els.messages.appendChild(thinking);
     els.messages.scrollTop = els.messages.scrollHeight;
 }
 
+async function summarizeChat() {
+    if (!activeChatId) return;
+    setError('');
+    els.summary.disabled = true;
+    const previousText = els.summary.textContent;
+    els.summary.textContent = 'Summarizing...';
+    try {
+        const result = await api.summary(activeChatId);
+        els.messages.querySelector('.empty')?.remove();
+        els.messages.appendChild(renderMessage({ role: 'ASSISTANT', content: `Summary:\n${result.summary}` }));
+        els.messages.scrollTop = els.messages.scrollHeight;
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        els.summary.textContent = previousText;
+        els.summary.disabled = false;
+    }
+}
+
 els.newChat.onclick = startNewChat;
+els.summary.onclick = summarizeChat;
 
 els.form.addEventListener('submit', (e) => {
     e.preventDefault();

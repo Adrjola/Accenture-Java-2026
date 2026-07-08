@@ -77,10 +77,26 @@
         }
         .chat-item .del:hover { color: #f87171; }
         main { flex: 1; display: flex; flex-direction: column; }
-        main header {
+        .chat-header {
             padding: 16px 20px;
             border-bottom: 1px solid var(--panel);
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        #summary {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: var(--panel-2);
+            color: var(--text);
+            cursor: pointer;
+        }
+        #summary:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
         #chatMessages {
             flex: 1;
@@ -126,19 +142,22 @@
 </head>
 <body>
 <aside>
-    <header>💬 Chats</header>
+    <header>Chats</header>
     <button id="new-chat">+ New chat</button>
     <div id="chat-list"></div>
 </aside>
 <main>
-    <header id="chat-title">Select or start a chat</header>
+    <header class="chat-header">
+        <span id="chat-title">Select or start a chat</span>
+        <button id="summary" disabled>Summary</button>
+    </header>
     <div id="chatMessages"><div class="empty">No conversation selected.</div></div>
     <div id="error"></div>
     <form id="composer">
-        <textarea id="input" rows="2" placeholder="Type a chatMessage and press Enter..." disabled></textarea>
+        <textarea id="input" rows="2" placeholder="Type a message and press Enter..." disabled></textarea>
         <button id="send" type="submit" disabled>Send</button>
     </form>
 </main>
-<script src="/app.js?v=chatMessages"></script>
+<script src="/app.js?v=summary"></script>
 </body>
 </html>
