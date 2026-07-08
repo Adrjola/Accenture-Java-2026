@@ -2,6 +2,7 @@ package com.accenture.springai_bootcamp_demo.client;
 
 import com.accenture.springai_bootcamp_demo.entity.ChatMessage;
 import com.accenture.springai_bootcamp_demo.entity.Role;
+import com.accenture.springai_bootcamp_demo.dto.ChatMetricsResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -15,6 +16,14 @@ public class AiClient {
     private static final String SYSTEM_PROMPT = """
             You are a helpful assistant inside a Spring Boot chat application.
             Answer clearly and concisely. Do not include hidden reasoning or <think> tags.
+            """;
+    private static final String SUMMARY_AGENT_PROMPT = """
+            You are a summary agent. Your job is to summarize conversations briefly and accurately.
+            Do not include hidden reasoning or <think> tags.
+            """;
+    private static final String COACH_AGENT_PROMPT = """
+            You are a conversation coach agent. Your job is to suggest useful next steps.
+            Keep recommendations practical and concise. Do not include hidden reasoning or <think> tags.
             """;
 
     private final ChatClient chatClient;
@@ -30,7 +39,7 @@ public class AiClient {
                 Conversation:
                 %s
                 """.formatted(formatHistory(history));
-        return call(prompt);
+        return call(SYSTEM_PROMPT, prompt);
     }
 
     public String summarize(List<ChatMessage> history) {
@@ -44,13 +53,37 @@ public class AiClient {
                 Conversation:
                 %s
                 """.formatted(formatHistory(history));
-        return call(prompt);
+        return call(SUMMARY_AGENT_PROMPT, prompt);
     }
 
-    private String call(String prompt) {
+    public String recommendNextSteps(String summary, ChatMetricsResponse metrics) {
+        String prompt = """
+                Review this chat summary and metrics, then suggest 3 practical next steps for the user.
+
+                Summary:
+                %s
+
+                Metrics:
+                Total messages: %d
+                User messages: %d
+                Assistant messages: %d
+                Total words: %d
+                Last user message: %s
+                """.formatted(
+                summary,
+                metrics.totalMessages(),
+                metrics.userMessages(),
+                metrics.assistantMessages(),
+                metrics.totalWords(),
+                metrics.lastUserMessage()
+        );
+        return call(COACH_AGENT_PROMPT, prompt);
+    }
+
+    private String call(String systemPrompt, String prompt) {
         try {
             String content = chatClient.prompt()
-                    .system(SYSTEM_PROMPT)
+                    .system(systemPrompt)
                     .user(prompt)
                     .call()
                     .content();

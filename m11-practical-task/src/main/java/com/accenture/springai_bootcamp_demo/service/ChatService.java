@@ -2,6 +2,7 @@ package com.accenture.springai_bootcamp_demo.service;
 
 import com.accenture.springai_bootcamp_demo.client.AiClient;
 import com.accenture.springai_bootcamp_demo.dto.ChatDto;
+import com.accenture.springai_bootcamp_demo.dto.ChatReviewResponse;
 import com.accenture.springai_bootcamp_demo.dto.ChatSummaryDto;
 import com.accenture.springai_bootcamp_demo.dto.ChatSummaryResponse;
 import com.accenture.springai_bootcamp_demo.dto.CreateChatRequest;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final AiClient aiClient;
+    private final ChatReviewWorkflow chatReviewWorkflow;
     private final ChatMapper chatMapper;
 
     @Transactional
@@ -78,6 +80,12 @@ public class ChatService {
     public ChatSummaryResponse summarizeChat(String chatId) {
         Chat chat = loadChat(chatId);
         return new ChatSummaryResponse(aiClient.summarize(chat.getChatMessages()));
+    }
+
+    @Transactional(readOnly = true)
+    public ChatReviewResponse reviewChat(String chatId) {
+        Chat chat = loadChat(chatId);
+        return chatReviewWorkflow.review(chat.getChatMessages());
     }
 
     private void recordUserMessage(Chat chat, String content) {

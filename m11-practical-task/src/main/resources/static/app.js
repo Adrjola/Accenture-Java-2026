@@ -4,6 +4,7 @@ const api = {
     get: (id) => fetch(`/api/chats/${id}`).then(r => r.json()),
     remove: (id) => fetch(`/api/chats/${id}`, { method: 'DELETE' }),
     summary: (id) => fetch(`/api/chats/${id}/summary`, { method: 'POST' }).then(handleJson),
+    review: (id) => fetch(`/api/chats/${id}/review`, { method: 'POST' }).then(handleJson),
     send: (id, content) => fetch(`/api/chats/${id}/chatMessages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,7 +29,8 @@ const els = {
     form: document.getElementById('composer'),
     error: document.getElementById('error'),
     newChat: document.getElementById('new-chat'),
-    summary: document.getElementById('summary')
+    summary: document.getElementById('summary'),
+    review: document.getElementById('review')
 };
 
 let activeChatId = null;
@@ -41,6 +43,7 @@ function setComposerEnabled(enabled) {
     els.input.disabled = !enabled;
     els.send.disabled = !enabled;
     els.summary.disabled = !enabled;
+    els.review.disabled = !enabled;
 }
 
 async function refreshChatList() {
@@ -169,8 +172,45 @@ async function summarizeChat() {
     }
 }
 
+async function reviewChat() {
+    if (!activeChatId) return;
+    setError('');
+    els.review.disabled = true;
+    const previousText = els.review.textContent;
+    els.review.textContent = 'Reviewing...';
+    try {
+        const result = await api.review(activeChatId);
+        els.messages.querySelector('.empty')?.remove();
+        els.messages.appendChild(renderMessage({
+            role: 'ASSISTANT',
+            content: formatReview(result)
+        }));
+        els.messages.scrollTop = els.messages.scrollHeight;
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        els.review.textContent = previousText;
+        els.review.disabled = false;
+    }
+}
+
+function formatReview(result) {
+    return `Review:
+Messages: ${result.metrics.totalMessages}
+User messages: ${result.metrics.userMessages}
+Assistant messages: ${result.metrics.assistantMessages}
+Total words: ${result.metrics.totalWords}
+
+Summary:
+${result.summary}
+
+Recommendations:
+${result.recommendations}`;
+}
+
 els.newChat.onclick = startNewChat;
 els.summary.onclick = summarizeChat;
+els.review.onclick = reviewChat;
 
 els.form.addEventListener('submit', (e) => {
     e.preventDefault();

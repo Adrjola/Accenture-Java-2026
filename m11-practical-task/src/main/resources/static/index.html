@@ -86,7 +86,11 @@
             justify-content: space-between;
             gap: 12px;
         }
-        #summary {
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .header-actions button {
             padding: 8px 12px;
             border: none;
             border-radius: 8px;
@@ -94,7 +98,7 @@
             color: var(--text);
             cursor: pointer;
         }
-        #summary:disabled {
+        .header-actions button:disabled {
             opacity: 0.5;
             cursor: default;
         }
@@ -149,7 +153,10 @@
 <main>
     <header class="chat-header">
         <span id="chat-title">Select or start a chat</span>
-        <button id="summary" disabled>Summary</button>
+        <div class="header-actions">
+            <button id="summary" disabled>Summary</button>
+            <button id="review" disabled>Review</button>
+        </div>
     </header>
     <div id="chatMessages"><div class="empty">No conversation selected.</div></div>
     <div id="error"></div>
@@ -158,6 +165,6 @@
         <button id="send" type="submit" disabled>Send</button>
     </form>
 </main>
-<script src="/app.js?v=summary"></script>
+<script src="/app.js?v=review"></script>
 </body>
 </html>
