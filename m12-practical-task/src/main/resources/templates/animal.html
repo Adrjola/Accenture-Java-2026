@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${animal.name()} + ' - Shelter'">Animal - Shelter</title>
+    <style>
+        body { font-family: sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+        nav { background: #f1f5f9; padding: 0.6rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
+        nav a { margin-right: 1rem; text-decoration: none; color: #2563eb; }
+        nav a:hover { text-decoration: underline; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 0.4rem; }
+        .detail { display: flex; gap: 1.5rem; align-items: flex-start; }
+        .detail img { border-radius: 4px; }
+        dl { margin: 0; }
+        dt { font-weight: bold; margin-top: 0.75rem; }
+        dd { margin-left: 0; }
+        .badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-available { background: #dcfce7; color: #166534; }
+        .badge-adopted { background: #e5e7eb; color: #4b5563; }
+        .back-link { display: inline-block; margin-top: 1rem; color: #2563eb; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main>
+    <h1 th:text="${animal.name()}">Animal name</h1>
+
+    <section class="detail" aria-label="Animal details">
+        <img th:src="${animal.imageUrl()}"
+             th:alt="${'Photo of ' + animal.name()}"
+             width="300"
+             height="200"
+             style="object-fit: cover;">
+
+        <dl>
+            <dt>ID</dt>
+            <dd th:text="${animal.id()}">1</dd>
+
+            <dt>Name</dt>
+            <dd th:text="${animal.name()}">Animal name</dd>
+
+            <dt>Type</dt>
+            <dd th:text="${animal.type()}">TYPE</dd>
+
+            <dt>Breed</dt>
+            <dd th:text="${animal.breed()}">Breed</dd>
+
+            <dt>Age</dt>
+            <dd th:text="${animal.age()}">0</dd>
+
+            <dt>Status</dt>
+            <dd>
+                <span class="badge"
+                      th:classappend="${animal.status().name() == 'ADOPTED' ? 'badge-adopted' : 'badge-available'}"
+                      th:text="${animal.status()}">STATUS</span>
+            </dd>
+
+            <dt>Description</dt>
+            <dd th:text="${animal.description()}">Description</dd>
+
+            <dt>Image</dt>
+            <dd th:text="${animal.imageUrl()}">Image URL</dd>
+
+            <dt th:if="${animal.adoptionNote() != null}">Adoption note</dt>
+            <dd th:if="${animal.adoptionNote() != null}" th:text="${animal.adoptionNote()}">
+                Adoption note
+            </dd>
+        </dl>
+    </section>
+
+    <a th:href="@{/animals}" class="back-link">Back to list</a>
+</main>
+</body>
+</html>

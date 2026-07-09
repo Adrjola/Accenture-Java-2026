@@ -36,7 +36,15 @@ public class AnimalService {
      * Returns all animals sorted by ID.
      */
     public List<AnimalResponse> findAll() {
+        return findAll(null);
+    }
+
+    /**
+     * Returns all animals, optionally filtered by type.
+     */
+    public List<AnimalResponse> findAll(AnimalType type) {
         return animalRepository.findAll().stream()
+                .filter(animal -> type == null || animal.getType() == type)
                 .map(this::toResponse)
                 .toList();
     }
@@ -63,30 +71,30 @@ public class AnimalService {
     /**
      * Creates a new animal with status AVAILABLE and persists it.
      */
-        public AnimalResponse create(AnimalCreateRequest request) {
+    public AnimalResponse create(AnimalCreateRequest request) {
         return createAnimal(
-            request.name(),
-            request.type(),
-            request.breed(),
-            request.age(),
-            request.description(),
-            request.imageUrl()
+                request.name(),
+                request.type(),
+                request.breed(),
+                request.age(),
+                request.description(),
+                request.imageUrl()
         );
-        }
+    }
 
-        /**
-         * Creates a new animal from the server-rendered page form.
-         */
-        public AnimalResponse createFromForm(AnimalForm form) {
+    /**
+     * Creates a new animal from the server-rendered page form.
+     */
+    public AnimalResponse create(AnimalForm form) {
         return createAnimal(
-            form.name(),
-            form.type(),
-            form.breed(),
-            form.age(),
-            form.description(),
-            form.imageUrl()
+                form.name(),
+                form.type(),
+                form.breed(),
+                form.age(),
+                form.description(),
+                form.imageUrl()
         );
-        }
+    }
 
     private AnimalResponse createAnimal(
             String name,
@@ -95,15 +103,15 @@ public class AnimalService {
             Integer age,
             String description,
             String imageUrl
-        ) {
+    ) {
         long id = animalRepository.nextId();
         Animal animal = new Animal(
                 id,
-            name,
-            type,
-            breed,
-            age,
-            description,
+                name,
+                type,
+                breed,
+                age,
+                description,
                 AnimalStatus.AVAILABLE,
                 resolveImageUrl(imageUrl, type),
                 null

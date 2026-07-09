@@ -102,8 +102,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/", "/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/animal-types").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/animals/adopted").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/animals/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/animals", "/api/animals/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/animals/new").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/animals", "/animals/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/animals/*/adopt").hasRole("USER")

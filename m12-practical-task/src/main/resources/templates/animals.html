@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shelter Animals</title>
+    <style>
+        body { font-family: sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+        nav { background: #f1f5f9; padding: 0.6rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
+        nav a { margin-right: 1rem; text-decoration: none; color: #2563eb; }
+        nav a:hover { text-decoration: underline; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 0.4rem; }
+        ul { list-style: none; padding: 0; }
+        li { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start; }
+        li img { border-radius: 4px; }
+        .info { flex: 1; }
+        .animal-link { color: #2563eb; text-decoration: none; }
+        .animal-link:hover { text-decoration: underline; }
+        .badge { display: inline-block; margin-left: 0.5rem; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-available { background: #dcfce7; color: #166534; }
+        .badge-adopted { background: #e5e7eb; color: #4b5563; }
+        .message { padding: 0.75rem; background: #dcfce7; color: #166534; border-radius: 4px; }
+        .filters { margin: 1rem 0; }
+        .filters a { margin-right: 0.75rem; color: #2563eb; }
+        .filters a.active { color: #111827; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main>
+    <h1>Shelter Animals</h1>
+    <p th:if="${message}" th:text="${message}" role="status" class="message"></p>
+
+    <div class="filters" aria-label="Filter animals by type">
+        <a th:href="@{/animals}"
+           th:classappend="${selectedType == null} ? 'active'">All</a>
+        <a th:href="@{/animals(type='CAT')}"
+           th:classappend="${selectedType != null and selectedType.name() == 'CAT'} ? 'active'">Cats</a>
+        <a th:href="@{/animals(type='DOG')}"
+           th:classappend="${selectedType != null and selectedType.name() == 'DOG'} ? 'active'">Dogs</a>
+        <a th:href="@{/animals(type='OTHER')}"
+           th:classappend="${selectedType != null and selectedType.name() == 'OTHER'} ? 'active'">Other</a>
+    </div>
+
+    <section aria-label="Animal list">
+        <ul>
+            <li th:each="animal : ${animals}">
+                <img th:src="${animal.imageUrl()}"
+                     th:alt="${'Photo of ' + animal.name()}"
+                     width="300"
+                     height="200"
+                     style="object-fit: cover;">
+                <div class="info">
+                    <a class="animal-link"
+                       th:href="@{/animals/{id}(id=${animal.id()})}"
+                       th:text="${animal.name()}">Animal name</a>
+                    <span class="badge"
+                          th:classappend="${animal.status().name() == 'ADOPTED' ? 'badge-adopted' : 'badge-available'}"
+                          th:text="${animal.status()}">STATUS</span>
+                    -
+                    <span th:text="${animal.type()}">TYPE</span>
+                    |
+                    <span th:text="${animal.breed()}">Breed</span>
+                    |
+                    Age: <span th:text="${animal.age()}">0</span>
+                    <p th:text="${animal.description()}">Description</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+</main>
+</body>
+</html>

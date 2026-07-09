@@ -6,7 +6,7 @@ This project is a simple sample application for learning basic UI development wi
 
 ## Author
 
-Created and maintained by Elina Rostoka, with development assistance from GitHub Copilot.
+Bootcamp starter project used for coursework and local practice.
 
 ## Disclaimer
 
@@ -30,7 +30,7 @@ If image filename/url is missing, a fallback is selected by animal type:
 ## Security
 
 The app is secured with Spring Security (see `SecurityConfig`). Two demo
-accounts are provisioned in memory — passwords are intentionally simple for
+accounts are provisioned in memory - passwords are intentionally simple for
 coursework, not production use. Roles are deliberately **not** hierarchical:
 an admin does not also hold `USER`, and vice versa.
 
@@ -41,7 +41,7 @@ an admin does not also hold `USER`, and vice versa.
 
 - Browsing animal pages and reading the API (`GET`) is open to everyone.
 - Creating an animal (`POST /animals`, `POST /api/animals`) requires `ADMIN`.
-- Adopting an animal (`POST /api/animals/{id}/adopt`) requires `USER` —
+- Adopting an animal (`POST /api/animals/{id}/adopt`) requires `USER` -
   admins cannot adopt.
 - Adopting sets the animal's `adoptionDetails` (adopter user ID + date) and
   flips its status to `ADOPTED`. Only `ADMIN` callers see the resulting
@@ -49,6 +49,27 @@ an admin does not also hold `USER`, and vice versa.
   everyone else just sees the bare `ADOPTED` status.
 - Unauthenticated requests to a protected page are redirected to Spring
   Security's built-in default login page at `/login`.
+
+## Post-Redirect-Get
+
+The add-animal form uses the Post-Redirect-Get pattern: the browser sends
+`POST /animals`, the app saves the animal, adds a short flash message, and
+redirects to `GET /animals`. This matters because refreshing the list page
+does not repeat the previous form submission and accidentally create another
+animal. Spring MVC supports this flow with `RedirectAttributes` flash
+attributes, which are available after the redirect and then removed.
+
+References:
+- https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/flash-attributes.html
+- https://en.wikipedia.org/wiki/Post/Redirect/Get
+
+## Animal Type Dropdown
+
+The add-animal form loads animal types with JavaScript from
+`GET /api/animal-types`. The earlier server-rendered dropdown approach is
+simpler for a small Thymeleaf page, because all options are rendered together
+with the form. The fetch approach is more decoupled from the template, because
+the browser can reuse the same API data without changing the HTML.
 
 **Bonus tasks** (see the instructions in `SecurityConfig`):
 - **Web:** build your own login page instead of using the default one.

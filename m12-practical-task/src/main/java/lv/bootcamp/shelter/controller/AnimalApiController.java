@@ -3,6 +3,7 @@ package lv.bootcamp.shelter.controller;
 import jakarta.validation.Valid;
 import lv.bootcamp.shelter.dto.AnimalCreateRequest;
 import lv.bootcamp.shelter.dto.AnimalResponse;
+import lv.bootcamp.shelter.model.AnimalType;
 import lv.bootcamp.shelter.service.AnimalService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,21 +19,26 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/animals")
+@RequestMapping("/api")
 public class AnimalApiController {
 
     private final AnimalService animalService;
 
-    @GetMapping
+    @GetMapping("/animals")
     public List<AnimalResponse> findAll() {
         return animalService.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/animals/{id}")
     public ResponseEntity<AnimalResponse> findById(@PathVariable Long id) {
         return animalService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/animal-types")
+    public List<AnimalType> findAnimalTypes() {
+        return List.of(AnimalType.values());
     }
 
     /**
@@ -41,7 +47,7 @@ public class AnimalApiController {
      * calling it repeatedly (e.g. with/without a token, or with a ROLE_USER token)
      * has no side effects, unlike {@code POST /api/animals}.
      */
-    @GetMapping("/adopted")
+    @GetMapping("/animals/adopted")
     public List<AnimalResponse> findAdopted() {
         return animalService.findAdopted();
     }
@@ -49,7 +55,7 @@ public class AnimalApiController {
     /**
      * Creates a new animal. Restricted to ROLE_ADMIN — see SecurityConfig.
      */
-    @PostMapping
+    @PostMapping("/animals")
     @ResponseStatus(HttpStatus.CREATED)
     public AnimalResponse create(@RequestBody @Valid AnimalCreateRequest request) {
         return animalService.create(request);
@@ -59,7 +65,7 @@ public class AnimalApiController {
      * Adopts an animal as the currently logged-in user. Restricted to ROLE_USER
      * (not ROLE_ADMIN) — see SecurityConfig.
      */
-    @PostMapping("/{id}/adopt")
+    @PostMapping("/animals/{id}/adopt")
     public ResponseEntity<AnimalResponse> adopt(@PathVariable Long id, Authentication authentication) {
         return animalService.adopt(id, authentication.getName())
                 .map(ResponseEntity::ok)
