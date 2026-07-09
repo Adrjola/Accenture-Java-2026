@@ -71,6 +71,18 @@ simpler for a small Thymeleaf page, because all options are rendered together
 with the form. The fetch approach is more decoupled from the template, because
 the browser can reuse the same API data without changing the HTML.
 
+## OpenAPI Documentation
+
+Swagger UI is available at:
+
+`http://localhost:8080/swagger-ui/index.html`
+
+Public GET endpoints can be tested directly. To test protected POST endpoints
+from Swagger UI, click **Authorize** and use the demo admin account:
+
+- username: `admin`
+- password: `admin123`
+
 **Bonus tasks** (see the instructions in `SecurityConfig`):
 - **Web:** build your own login page instead of using the default one.
 - **API/Swagger:** replace HTTP Basic on `/api/**` with JWT auth, so Swagger

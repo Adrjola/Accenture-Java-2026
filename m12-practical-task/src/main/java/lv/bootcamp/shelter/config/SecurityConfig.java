@@ -25,14 +25,14 @@ import org.springframework.security.web.SecurityFilterChain;
  *       {@code POST /api/animals}).</li>
  *   <li>Only ROLE_USER can adopt an animal ({@code POST /api/animals/{id}/adopt});
  *       admins are deliberately excluded since they don't have ROLE_USER.</li>
- *   <li>Only ROLE_ADMIN can list adopted animals ({@code GET /api/animals/adopted}) —
+ *   <li>Only ROLE_ADMIN can list adopted animals ({@code GET /api/animals/adopted}) -
  *       a read-only endpoint, handy for testing role-based JWT authorization (bonus
  *       task below) without any side effects.</li>
- *   <li>Only ROLE_ADMIN sees the "adopted by {userId} on {date}" note —
+ *   <li>Only ROLE_ADMIN sees the "adopted by {userId} on {date}" note -
  *       enforced in {@code AnimalService#toResponse}, not here, since it's a
  *       field-level (not URL-level) restriction.</li>
  *   <li>Uses Spring Security's built-in default login page (served at
- *       {@code /login}) — nothing to build here yet.</li>
+ *       {@code /login}) - nothing to build here yet.</li>
  * </ul>
  *
  * <p><b>Bonus task (web):</b> replace the default login page with your own:
@@ -57,7 +57,7 @@ import org.springframework.security.web.SecurityFilterChain;
  *   <li>Write a {@code JwtAuthFilter} ({@code OncePerRequestFilter}) that reads
  *       the {@code Authorization: Bearer <token>} header, validates/parses the
  *       JWT, and sets the {@code Authentication} in the
- *       {@code SecurityContextHolder} — add it before
+ *       {@code SecurityContextHolder} - add it before
  *       {@code UsernamePasswordAuthenticationFilter} in the filter chain.</li>
  *   <li>Make the API stateless: {@code sessionManagement(session ->
  *       session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))} for
@@ -100,7 +100,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET,
-                                "/", "/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico")
+                                "/", "/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico",
+                                "/swagger-ui/**", "/v3/api-docs/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/animal-types").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/animals/adopted").hasRole("ADMIN")

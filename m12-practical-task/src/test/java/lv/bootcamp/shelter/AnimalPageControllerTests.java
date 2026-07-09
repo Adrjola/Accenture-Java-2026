@@ -4,11 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,6 +73,38 @@ class AnimalPageControllerTests {
                 .andExpect(content().string(containsString("CAT")))
                 .andExpect(content().string(containsString("DOG")))
                 .andExpect(content().string(containsString("OTHER")));
+    }
+
+    @Test
+    void swaggerUiAndOpenApiDocsArePublic() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Shelter API")))
+                .andExpect(content().string(containsString("Create animal")))
+                .andExpect(content().string(containsString("/api/animals")))
+                .andExpect(content().string(containsString("basicAuth")));
+    }
+
+    @Test
+    void adminCanCreateAnimalThroughApi() throws Exception {
+        mockMvc.perform(post("/api/animals")
+                        .with(httpBasic("admin", "admin123"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "SwaggerCat",
+                                  "type": "CAT",
+                                  "breed": "Tabby",
+                                  "age": 2,
+                                  "description": "Created through the documented API",
+                                  "imageUrl": "Luna.jpeg"
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(content().string(containsString("SwaggerCat")));
     }
 
     @Test
