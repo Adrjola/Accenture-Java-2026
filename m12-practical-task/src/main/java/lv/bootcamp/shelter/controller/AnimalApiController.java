@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,9 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/animals")
 @Tag(name = "Animals", description = "REST endpoints for shelter animal management")
+@SecurityRequirement(name = "bearerAuth")
 public class AnimalApiController {
 
     private final AnimalService animalService;
@@ -40,7 +42,7 @@ public class AnimalApiController {
             description = "Returns all shelter animals with their current adoption status."
     )
     @ApiResponse(responseCode = "200", description = "Animals returned")
-    @GetMapping("/animals")
+    @GetMapping
     public List<AnimalResponse> findAll() {
         return animalService.findAll();
     }
@@ -53,7 +55,7 @@ public class AnimalApiController {
             @ApiResponse(responseCode = "200", description = "Animal found"),
             @ApiResponse(responseCode = "404", description = "Animal not found", content = @Content)
     })
-    @GetMapping("/animals/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<AnimalResponse> findById(
             @Parameter(description = "Animal id", example = "1")
             @PathVariable Long id) {
@@ -67,7 +69,7 @@ public class AnimalApiController {
             description = "Returns the supported values for animal type dropdowns."
     )
     @ApiResponse(responseCode = "200", description = "Animal types returned")
-    @GetMapping("/animal-types")
+    @GetMapping("/types")
     public List<AnimalType> findAnimalTypes() {
         return List.of(AnimalType.values());
     }
@@ -76,13 +78,16 @@ public class AnimalApiController {
             summary = "List adopted animals",
             description = "Returns only adopted animals. Requires ADMIN."
     )
-    @SecurityRequirement(name = "basicAuth")
+    @SecurityRequirements({
+            @SecurityRequirement(name = "bearerAuth"),
+            @SecurityRequirement(name = "basicAuth")
+    })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Adopted animals returned"),
             @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content),
             @ApiResponse(responseCode = "403", description = "Admin role required", content = @Content)
     })
-    @GetMapping("/animals/adopted")
+    @GetMapping("/adopted")
     public List<AnimalResponse> findAdopted() {
         return animalService.findAdopted();
     }
@@ -91,14 +96,17 @@ public class AnimalApiController {
             summary = "Create animal",
             description = "Creates a new available animal. Requires ADMIN and can be tested from Swagger UI with Basic Auth."
     )
-    @SecurityRequirement(name = "basicAuth")
+    @SecurityRequirements({
+            @SecurityRequirement(name = "bearerAuth"),
+            @SecurityRequirement(name = "basicAuth")
+    })
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Animal created"),
             @ApiResponse(responseCode = "400", description = "Invalid request body", content = @Content),
             @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content),
             @ApiResponse(responseCode = "403", description = "Admin role required", content = @Content)
     })
-    @PostMapping("/animals")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AnimalResponse create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -113,7 +121,10 @@ public class AnimalApiController {
             summary = "Adopt animal",
             description = "Marks an available animal as adopted by the authenticated USER account."
     )
-    @SecurityRequirement(name = "basicAuth")
+    @SecurityRequirements({
+            @SecurityRequirement(name = "bearerAuth"),
+            @SecurityRequirement(name = "basicAuth")
+    })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Animal adopted"),
             @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content),
@@ -121,7 +132,7 @@ public class AnimalApiController {
             @ApiResponse(responseCode = "404", description = "Animal not found", content = @Content),
             @ApiResponse(responseCode = "409", description = "Animal already adopted", content = @Content)
     })
-    @PostMapping("/animals/{id}/adopt")
+    @PostMapping("/{id}/adopt")
     public ResponseEntity<AnimalResponse> adopt(
             @Parameter(description = "Animal id", example = "1")
             @PathVariable Long id,

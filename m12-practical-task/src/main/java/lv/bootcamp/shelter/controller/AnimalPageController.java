@@ -6,6 +6,7 @@ import lv.bootcamp.shelter.form.AnimalForm;
 import lv.bootcamp.shelter.model.AnimalType;
 import lv.bootcamp.shelter.service.AnimalService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,6 +27,11 @@ public class AnimalPageController {
     @GetMapping("/")
     public String index() {
         return "index";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login";
     }
 
     @GetMapping("/animals")
@@ -59,6 +65,16 @@ public class AnimalPageController {
 
         animalService.create(form);
         redirectAttributes.addFlashAttribute("message", "Animal added!");
+        return "redirect:/animals";
+    }
+
+    @PostMapping("/animals/{id}/adopt")
+    public String adoptAnimal(@PathVariable Long id,
+                              Authentication authentication,
+                              RedirectAttributes redirectAttributes) {
+        animalService.adopt(id, authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Animal not found"));
+        redirectAttributes.addFlashAttribute("message", "Animal adopted!");
         return "redirect:/animals";
     }
 }

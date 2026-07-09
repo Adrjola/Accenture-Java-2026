@@ -72,7 +72,7 @@
         typeSelect.appendChild(option);
     }
 
-    fetch('/api/animal-types')
+    fetch('/api/v1/animals/types')
         .then(response => response.json())
         .then(types => {
             addOption('', '-- choose --');

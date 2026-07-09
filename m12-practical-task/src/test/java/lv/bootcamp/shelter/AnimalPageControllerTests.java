@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -54,6 +55,7 @@ class AnimalPageControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Luna")))
                 .andExpect(content().string(containsString("Bengal")))
+                .andExpect(content().string(containsString("Adopt animal")))
                 .andExpect(content().string(containsString("Back to list")));
 
         mockMvc.perform(get("/animals/9999"))
@@ -61,14 +63,38 @@ class AnimalPageControllerTests {
     }
 
     @Test
-    void addAnimalFormRequiresLogin() throws Exception {
-        mockMvc.perform(get("/animals/new"))
-                .andExpect(status().isUnauthorized());
+    void customLoginPageIsPublicAndShowsErrorMessage() throws Exception {
+        mockMvc.perform(get("/login"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Shelter staff login")))
+                .andExpect(content().string(containsString("name=\"username\"")))
+                .andExpect(content().string(containsString("name=\"password\"")));
+
+        mockMvc.perform(get("/login").param("error", ""))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Invalid username or password")));
+    }
+
+    @Test
+    void loginRedirectsToAnimalsAfterSuccess() throws Exception {
+        mockMvc.perform(post("/login")
+                        .with(csrf())
+                        .param("username", "admin")
+                        .param("password", "admin123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/animals"));
+    }
+
+    @Test
+    void addAnimalFormRedirectsToLogin() throws Exception {
+        mockMvc.perform(get("/animals/new").accept(MediaType.TEXT_HTML))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
     }
 
     @Test
     void animalTypesApiReturnsAvailableTypes() throws Exception {
-        mockMvc.perform(get("/api/animal-types"))
+        mockMvc.perform(get("/api/v1/animals/types"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("CAT")))
                 .andExpect(content().string(containsString("DOG")))
@@ -80,17 +106,19 @@ class AnimalPageControllerTests {
         mockMvc.perform(get("/swagger-ui/index.html"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/v3/api-docs"))
+        mockMvc.perform(get("/v1/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Shelter API")))
                 .andExpect(content().string(containsString("Create animal")))
-                .andExpect(content().string(containsString("/api/animals")))
-                .andExpect(content().string(containsString("basicAuth")));
+                .andExpect(content().string(containsString("/api/v1/animals")))
+                .andExpect(content().string(containsString("basicAuth")))
+                .andExpect(content().string(containsString("bearerAuth")))
+                .andExpect(content().string(containsString("Spring Boot reference documentation")));
     }
 
     @Test
     void adminCanCreateAnimalThroughApi() throws Exception {
-        mockMvc.perform(post("/api/animals")
+        mockMvc.perform(post("/api/v1/animals")
                         .with(httpBasic("admin", "admin123"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -108,12 +136,27 @@ class AnimalPageControllerTests {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
+    void userCanAdoptAnimalFromDetailPage() throws Exception {
+        mockMvc.perform(post("/animals/6/adopt").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/animals"))
+                .andExpect(flash().attribute("message", "Animal adopted!"));
+
+        mockMvc.perform(get("/animals/6"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Pepper")))
+                .andExpect(content().string(containsString("ADOPTED")))
+                .andExpect(content().string(not(containsString("Adopt animal"))));
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void adminCanOpenAndSubmitAddAnimalForm() throws Exception {
         mockMvc.perform(get("/animals/new"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Add a new animal")))
-                .andExpect(content().string(containsString("fetch('/api/animal-types')")));
+                .andExpect(content().string(containsString("fetch('/api/v1/animals/types')")));
 
         mockMvc.perform(post("/animals")
                         .with(csrf())

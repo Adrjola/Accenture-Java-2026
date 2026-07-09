@@ -40,15 +40,33 @@ an admin does not also hold `USER`, and vice versa.
 | `admin`  | `admin123`| `ADMIN` |
 
 - Browsing animal pages and reading the API (`GET`) is open to everyone.
-- Creating an animal (`POST /animals`, `POST /api/animals`) requires `ADMIN`.
-- Adopting an animal (`POST /api/animals/{id}/adopt`) requires `USER` -
-  admins cannot adopt.
+- Creating an animal (`POST /animals`, `POST /api/v1/animals`) requires `ADMIN`.
+- Adopting an animal (`POST /animals/{id}/adopt`,
+  `POST /api/v1/animals/{id}/adopt`) requires `USER` - admins cannot adopt.
 - Adopting sets the animal's `adoptionDetails` (adopter user ID + date) and
   flips its status to `ADOPTED`. Only `ADMIN` callers see the resulting
   `adoptionNote` ("adopted by {userId} on {date}") in the API response;
   everyone else just sees the bare `ADOPTED` status.
-- Unauthenticated requests to a protected page are redirected to Spring
-  Security's built-in default login page at `/login`.
+- Unauthenticated requests to a protected page are redirected to the custom
+  Thymeleaf login page at `/login`.
+
+## Custom Login Page
+
+The app uses a custom `/login` page instead of Spring Security's default one.
+The form posts `username` and `password` to `/login`; after a successful login
+the user is redirected to `/animals`. Invalid credentials show a visible
+"Invalid username or password" message.
+
+## Adopting Animals In The UI
+
+To adopt an animal from the browser, log in as the demo `USER` account:
+
+- username: `user`
+- password: `user123`
+
+Open an available animal from the list and click **Adopt animal** on the detail
+page. After a successful adoption the app redirects back to the animal list and
+shows a short success message.
 
 ## Post-Redirect-Get
 
@@ -66,7 +84,7 @@ References:
 ## Animal Type Dropdown
 
 The add-animal form loads animal types with JavaScript from
-`GET /api/animal-types`. The earlier server-rendered dropdown approach is
+`GET /api/v1/animals/types`. The earlier server-rendered dropdown approach is
 simpler for a small Thymeleaf page, because all options are rendered together
 with the form. The fetch approach is more decoupled from the template, because
 the browser can reuse the same API data without changing the HTML.
@@ -77,14 +95,22 @@ Swagger UI is available at:
 
 `http://localhost:8080/swagger-ui/index.html`
 
+The OpenAPI JSON is available at:
+
+`http://localhost:8080/v1/api-docs`
+
 Public GET endpoints can be tested directly. To test protected POST endpoints
-from Swagger UI, click **Authorize** and use the demo admin account:
+from Swagger UI, click **Authorize** and use the demo admin account under
+`basicAuth`:
 
 - username: `admin`
 - password: `admin123`
 
-**Bonus tasks** (see the instructions in `SecurityConfig`):
-- **Web:** build your own login page instead of using the default one.
-- **API/Swagger:** replace HTTP Basic on `/api/**` with JWT auth, so Swagger
-  UI (Task B) can authorize once with a bearer token instead of prompting
-  for credentials on every call.
+The OpenAPI spec also documents a `bearerAuth` JWT scheme as the intended
+token-based API contract, but the current working implementation still uses
+HTTP Basic for protected API calls.
+
+To import the API into Postman, run the app and import this URL as an OpenAPI
+definition:
+
+`http://localhost:8080/v1/api-docs`
